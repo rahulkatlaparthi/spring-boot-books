@@ -39,11 +39,31 @@ public class Books {
     @JsonIgnore
     private Users user;
 	private int userid;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "attachment_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    private Attachments attachment;
+	private int attachmentid;
 	
-	@Lob
-    @Column(name = "Image", length = Integer.MAX_VALUE, nullable = true)
-    private String image;
 	
+	
+	public Attachments getAttachment() {
+		return attachment;
+	}
+
+	public void setAttachment(Attachments attachment) {
+		this.attachment = attachment;
+	}
+
+	public int getAttachmentid() {
+		return attachmentid;
+	}
+
+	public void setAttachmentid(int attachmentid) {
+		this.attachmentid = attachmentid;
+	}
+
 	private Boolean isExplore;
 
 	public int getId() {
@@ -118,13 +138,7 @@ public class Books {
 		this.isExplore = isExplore;
 	}
 
-	public String getImage() {
-		return image;
-	}
-
-	public void setImage(String image) {
-		this.image = image;
-	}
+	
 
 	
 	

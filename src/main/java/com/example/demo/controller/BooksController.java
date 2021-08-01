@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,169 +35,225 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-
 import com.example.demo.exeception.*;
+import com.example.demo.model.Attachments;
 import com.example.demo.model.Books;
 import com.example.demo.model.Users;
 
+import com.example.demo.repository.AttachmentRepository;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.UserRepository;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @RestController
 public class BooksController {
-	
+
 	@Value("${upoadDir}")
 	private String uploadFolder;
 	@Autowired
 	private BookRepository book;
 	@Autowired
 	private UserRepository use;
+	@Autowired
+	private AttachmentRepository attach;
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
 	public String getExtension(String mimeType) {
-		if(mimeType==null) {
+		if (mimeType == null) {
 			return null;
 		}
-		if(mimeType.contains("image/")) {
-			return "."+mimeType.replace("image/", "");
+		if (mimeType.contains("image/")) {
+			return "." + mimeType.replace("image/", "");
 		}
 		return null;
-		
+
 	}
-	
-	@PostMapping("/addbooks")
-	public ResponseEntity<?>  addProduct(@RequestParam("title") String title,@RequestParam("description") String description,@RequestParam("author") String author,@RequestParam("quantity") int quantity,@RequestParam("price") double price,@RequestParam("userid") int userid,HttpServletRequest request
-			,final @RequestParam("image") MultipartFile file,@RequestParam("mimeType") String mimeType) throws IOException {
-		if()
-		Optional<Users> us;
-		Date date = new Date();
-		long l=date.getTime();
-		String str = Long.toString(l)+getExtension(mimeType);
-		
-		Map<String, Object> response = new HashMap<>();
-		File file1 = new File("C:\\\\Users\\\\AnuSatya\\\\Documents\\\\workspace-spring-tool-suite-4-4.10.0.RELEASE\\\\springboot-book\\\\src\\\\main\\\\resources\\\\static\\\\image\\"+userid);
-        if (!file1.exists()) {
-            if (file1.mkdir()) {
-                System.out.println("Directory is created!");
-            } else {
-                System.out.println("Failed to create directory!");
-            }
-        }
-		 String  uploadDirectory="C:\\Users\\AnuSatya\\Documents\\workspace-spring-tool-suite-4-4.10.0.RELEASE\\springboot-book\\src\\main\\resources\\static\\image\\"+userid;
-		 StringBuilder fileNames=new StringBuilder();
-		Path fileNameAndPath=Paths.get(uploadDirectory,str);
-		fileNames.append(str+ " ");
-		Files.write(fileNameAndPath, file.getBytes());
-		Books books=new Books();
-		books.setAuthor(author);
-		books.setDescription(description);
-		books.setPrice(price);
-		books.setTitle(title);
-		books.setQuantity(quantity);
-//		books.setImage(ServletUriComponentsBuilder.fromCurrentContextPath().path("/image/").path(file.getOriginalFilename()).toUriString());
-		books.setImage("/image/"+file.getOriginalFilename());
-		books.setUserid(userid);
-		 us= use.findById(userid);
-		 Users p=us.get();
-        books.setUser(p);
-        book.save(books);
-        return new ResponseEntity<>("Product Saved With File - ", HttpStatus.OK);
-//	
-		
-//		try {
-//			log.info("upload Folder is: "+uploadFolder);
-////			String uploadDirectory = System.getProperty("user.dir") + uploadFolder;
-//			String  uploadDirectory=new ClassPathResource("static/image/").getFile().getAbsolutePath();
-////		String uploadDirectory = request.getServletContext().getRealPath(uploadFolder);
-//		log.info("uploadDirectory:: " + uploadDirectory);
-//		String fileName = file.getOriginalFilename();
-//		String filePath = Paths.get(uploadDirectory, fileName).toString();
-//		log.info("FileName: " + file.getOriginalFilename());
-//		Date createDate = new Date();
-//		
-//		try {
-//			File dir = new File(uploadDirectory);
-//			if (!dir.exists()) {
-//				log.info("Folder Created");
-//				dir.mkdirs();
+
+//	@PostMapping("/addbooks")
+//	public BaseResponse addProduct(@RequestParam("title") String title,
+//			@RequestParam("description") String description, @RequestParam("author") String author,
+//			@RequestParam("quantity") int quantity, @RequestParam("price") double price,
+//			@RequestParam("userid") int userid, HttpServletRequest request,
+//			final @RequestParam("image") MultipartFile file,  @RequestParam("mimeType")   String mimeType)
+//					throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+//
+//		if (!(file.isEmpty())) {
+//			if (mimeType.isEmpty()) {
+//				return new BaseResponse(false, "Failed", null);
 //			}
-//			// Save the file locally
-//			BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(filePath)));
-//			stream.write(file.getBytes());
-//			stream.close();
-//		} catch (Exception e) {
-//			log.info("in catch");
-//			e.printStackTrace();
+//			SecureRandom secureRandomGenerator = SecureRandom.getInstance("SHA1PRNG", "SUN");
+//			int r = secureRandomGenerator.nextInt();
+//			Optional<Users> us;
+//			Date date = new Date();
+//			long l = date.getTime();
+//			String str = r + getExtension(mimeType);
+////			String str = "img"+ getExtension(mimeType);
+////			String s=Integer.toString(userid);
+//
+//			Map<String, Object> response = new HashMap<>();
+//
+//			/*
+//			 * File file1 = new File(
+//			 * "C:\\\\Users\\\\AnuSatya\\\\Documents\\\\workspace-spring-tool-suite-4-4.10.0.RELEASE\\\\springboot-book\\\\src\\\\main\\\\resources\\\\static\\\\image\\"
+//			 * ); if (!file1.exists()) { if (file1.mkdir()) {
+//			 * System.out.println("Directory is created!"); } else {
+//			 * System.out.println("Failed to create directory!"); } }
+//			 */
+//
+//			String uploadDirectory = "C:\\Users\\AnuSatya\\Documents\\workspace-spring-tool-suite-4-4.10.0.RELEASE\\springboot-book\\src\\main\\resources\\static\\image";
+//			StringBuilder fileNames = new StringBuilder();
+//			Path fileNameAndPath = Paths.get(uploadDirectory, str);
+//			fileNames.append(str+" ");
+//			Files.write(fileNameAndPath, file.getBytes());
+//			Books books = new Books();
+//			books.setAuthor(author);
+//			books.setDescription(description);
+//			books.setPrice(price);
+//			books.setTitle(title);
+//			books.setQuantity(quantity);
+//			log.info("ip address: " + ServletUriComponentsBuilder.fromCurrentContextPath().path("image/")
+//					.path(str).toUriString());
+////		books.setImage(ServletUriComponentsBuilder.fromCurrentContextPath().path("/image/").path(file.getOriginalFilename()).toUriString());
+//
+//			books.setImage("/image/" + str);
+//			books.setUserid(userid);
+//			us = use.findById(userid);
+//			Users p = us.get();
+//			books.setUser(p);
+//			book.save(books);
+//			return new BaseResponse(true, "Success", books.getId());
 //		}
-//		byte[] imageData = file.getBytes();
-//		Books books=new Books();
+//		Books books = new Books();
 //		books.setAuthor(author);
 //		books.setDescription(description);
 //		books.setPrice(price);
 //		books.setTitle(title);
 //		books.setQuantity(quantity);
-////		books.setImage(ServletUriComponentsBuilder.fromCurrentContextPath().path("/image/").path(file.getOriginalFilename()).toUriString());
-//		books.setImage("/image/"+file.getOriginalFilename());
 //		books.setUserid(userid);
-//		 us= use.findById(userid);
-//		 Users p=us.get();
-//        books.setUser(p);
-//        book.save(books);
-//        return new ResponseEntity<>("Product Saved With File - " + fileName, HttpStatus.OK);
-//		}
-//		catch (Exception e) {
-//			e.printStackTrace();
-//			log.info("Exception: " + e);
-//			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//			
-//		}
-//	
-        
-		 
-		
-//	      us= use.findById(books.getUserid());
-//	      Users p=us.get();
-//	      books.setUser(p);
-//		 Books bo=book.save(books);
-//		 response.put("books", bo);
-//		 return new BaseResponse(true,"Success",response);
-	}
+//		Optional<Users> us;
+//		us = use.findById(userid);
+//
+//		Users p = us.get();
+//		books.setUser(p);
+//		book.save(books);
+//		return new BaseResponse(true, "Success", books.getId());
+//
+////	
+//
+////		try {
+////			log.info("upload Folder is: "+uploadFolder);
+//////			String uploadDirectory = System.getProperty("user.dir") + uploadFolder;
+////			String  uploadDirectory=new ClassPathResource("static/image/").getFile().getAbsolutePath();
+//////		String uploadDirectory = request.getServletContext().getRealPath(uploadFolder);
+////		log.info("uploadDirectory:: " + uploadDirectory);
+////		String fileName = file.getOriginalFilename();
+////		String filePath = Paths.get(uploadDirectory, fileName).toString();
+////		log.info("FileName: " + file.getOriginalFilename());
+////		Date createDate = new Date();
+////		
+////		try {
+////			File dir = new File(uploadDirectory);
+////			if (!dir.exists()) {
+////				log.info("Folder Created");
+////				dir.mkdirs();
+////			}
+////			// Save the file locally
+////			BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(filePath)));
+////			stream.write(file.getBytes());
+////			stream.close();
+////		} catch (Exception e) {
+////			log.info("in catch");
+////			e.printStackTrace();
+////		}
+////		byte[] imageData = file.getBytes();
+////		Books books=new Books();
+////		books.setAuthor(author);
+////		books.setDescription(description);
+////		books.setPrice(price);
+////		books.setTitle(title);
+////		books.setQuantity(quantity);
+//////		books.setImage(ServletUriComponentsBuilder.fromCurrentContextPath().path("/image/").path(file.getOriginalFilename()).toUriString());
+////		books.setImage("/image/"+file.getOriginalFilename());
+////		books.setUserid(userid);
+////		 us= use.findById(userid);
+////		 Users p=us.get();
+////        books.setUser(p);
+////        book.save(books);
+////        return new ResponseEntity<>("Product Saved With File - " + fileName, HttpStatus.OK);
+////		}
+////		catch (Exception e) {
+////			e.printStackTrace();
+////			log.info("Exception: " + e);
+////			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+////			
+////		}
+////	
+//
+////	      us= use.findById(books.getUserid());
+////	      Users p=us.get();
+////	      books.setUser(p);
+////		 Books bo=book.save(books);
+////		 response.put("books", bo);
+////		 return new BaseResponse(true,"Success",response);
+//	}
 	
+	@PostMapping("/addbook")
+	public BaseResponse createproduct(@RequestBody Books books) {
+	Books bookss=new Books();
+	  Optional<Users> us;
+      us= use.findById(books.getUserid());
+      Users p=us.get();
+      books.setUser(p);
+      Optional<Attachments> att;
+      att=attach.findById(books.getAttachmentid());
+      Attachments at=att.get();
+      books.setAttachment(at);
+      bookss=book.save(books);
+      
+      return new BaseResponse(true, "Success", bookss.getId());
+      
+      
+      
+
+		
+	
+	
+	
+		
+		
+	}
+
 	@GetMapping("/allbooks")
-	public List<Books> getBooks(){
+	public List<Books> getBooks() {
 		return book.findAll();
 	}
-	
-	
-	
+
 	@PostMapping("/getbooks")
 	public BaseResponse getBooks(@RequestBody Books books) {
 		Map<String, Object> response = new HashMap<>();
-		if(books.getIsExplore()) {
-			
-			List<Books> usd= book.findbyNotUserId(books.getUserid());
+		if (books.getIsExplore()) {
+
+			List<Books> usd = book.findbyNotUserId(books.getUserid());
 //			response.put("books", usd);
-			return new BaseResponse(true,"Success",usd);
-		}
-		else {
-		List<Books> usd= book.findbyUserId(books.getUserid());
+			return new BaseResponse(true, "Success", usd);
+		} else {
+			List<Books> usd = book.findbyUserId(books.getUserid());
 //		response.put("books", usd);
-		return new BaseResponse(true,"Success",usd);
+			return new BaseResponse(true, "Success", usd);
 		}
-		
+
 	}
+
 	@DeleteMapping("/deleteproduct/{id}")
 	public BaseResponse deleteProduct(@PathVariable int id) {
 		Optional<Books> prod;
-		prod=book.findById(id);
-		if(prod.isPresent()) {
+		prod = book.findById(id);
+		if (prod.isPresent()) {
 			book.deleteById(id);
-			return new BaseResponse(true,"Success",prod);
+			return new BaseResponse(true, "Success", prod);
 		}
-		return new BaseResponse(false,"Failed to delete",id);
-		
-		
+		return new BaseResponse(false, "Failed to delete", id);
+
 	}
-	
 
 }
